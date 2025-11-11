@@ -30,3 +30,71 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// PUT update project
+export async function PUT(request: NextRequest) {
+  try {
+    await connectDB();
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Project ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const project = await Project.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!project) {
+      return NextResponse.json(
+        { success: false, error: 'Project not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data: project });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Failed to update project' },
+      { status: 400 }
+    );
+  }
+}
+
+// DELETE project
+export async function DELETE(request: NextRequest) {
+  try {
+    await connectDB();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Project ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const project = await Project.findByIdAndDelete(id);
+
+    if (!project) {
+      return NextResponse.json(
+        { success: false, error: 'Project not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data: project });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete project' },
+      { status: 400 }
+    );
+  }
+}
